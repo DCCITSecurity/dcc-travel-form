@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCC International Travel &amp; Device Authorization</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #1a2e5a; --navy-mid: #243f7a; --blue: #1a4fa0; --blue-light: #2d6fd4;
+    --red: #c0392b; --red-light: #e04030;
+    --surface: #f5f7fb; --surface2: #eaecf4; --border: #d0d6e8;
+    --text: #1a1e2a; --text-mid: #4a5068; --text-light: #7a819a;
+    --white: #ffffff; --warn: #b84a0e;
+    --font: "IBM Plex Sans", sans-serif; --mono: "IBM Plex Mono", monospace;
+    --radius: 4px; --radius-lg: 8px;
+  }
+  body { font-family: var(--font); background: var(--surface); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.6; }
+  .page-header { background: var(--white); border-bottom: 3px solid var(--red); box-shadow: 0 2px 8px rgba(26,46,90,0.08); }
+  .header-inner { max-width: 880px; margin: 0 auto; padding: 16px 40px; display: flex; align-items: center; gap: 20px; }
+  .header-logo { height: 64px; width: auto; flex-shrink: 0; }
+  .header-divider { width: 1px; height: 52px; background: var(--border); flex-shrink: 0; }
+  .header-text h1 { font-size: 17px; font-weight: 600; color: var(--navy); letter-spacing: -0.01em; line-height: 1.3; }
+  .header-text p { font-size: 11px; color: var(--text-light); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .header-ref { margin-left: auto; text-align: right; flex-shrink: 0; }
+  .header-ref .rl { font-size: 10px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--mono); }
+  .header-ref .rv { font-family: var(--mono); font-size: 12px; color: var(--navy); margin-top: 2px; font-weight: 500; }
+  .header-stripe { background: var(--navy); height: 4px; }
+  .notice-bar { background: #fff3f2; border-bottom: 1px solid #f5c0bc; }
+  .notice-inner { max-width: 880px; margin: 0 auto; padding: 9px 40px; display: flex; gap: 10px; font-size: 13px; color: #7b1f1f; }
+  .notice-inner strong { font-weight: 600; }
+  .form-shell { max-width: 880px; margin: 0 auto; padding: 32px 40px 60px; }
+  .progress-nav { display: flex; margin-bottom: 28px; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--white); }
+  .step-btn { flex: 1; padding: 11px 6px; border: none; background: var(--white); cursor: pointer; font-family: var(--font); font-size: 11px; font-weight: 500; color: var(--text-light); border-right: 1px solid var(--border); transition: all 0.15s; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .step-btn:last-child { border-right: none; }
+  .step-btn.active { background: var(--navy); color: var(--white); }
+  .step-btn.done { background: #eef3fb; color: var(--blue); }
+  .step-num { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 10px; font-family: var(--mono); }
+  .step-btn.active .step-num { background: var(--red); border-color: var(--red); color: white; }
+  .step-btn.done .step-num { background: var(--blue); border-color: var(--blue); color: white; }
+  .form-section { display: none; }
+  .form-section.active { display: block; }
+  .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 2px solid var(--surface2); }
+  .section-icon { width: 34px; height: 34px; background: var(--navy); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .section-icon svg { width: 17px; height: 17px; fill: none; stroke: white; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .section-title h2 { font-size: 15px; font-weight: 600; color: var(--navy); }
+  .section-title p { font-size: 12px; color: var(--text-light); margin-top: 1px; }
+  .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px; margin-bottom: 14px; }
+  .card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--blue); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--surface2); }
+  .field-grid { display: grid; gap: 14px; }
+  .field-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.span-2 { grid-column: span 2; }
+  label { font-size: 12px; font-weight: 500; color: var(--text-mid); }
+  label .req { color: var(--red); margin-left: 2px; }
+  input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select, textarea {
+    font-family: var(--font); font-size: 14px; color: var(--text); background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px; outline: none;
+    transition: border-color 0.15s; width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--blue); background: var(--white); box-shadow: 0 0 0 3px rgba(26,79,160,0.1); }
+  textarea { resize: vertical; min-height: 72px; }
+  .choice-group { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 2px; }
+  .choice-chip { display: flex; align-items: center; gap: 7px; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 13px; color: var(--text-mid); transition: all 0.12s; user-select: none; }
+  .choice-chip input { display: none; }
+  .choice-chip:hover { border-color: var(--blue-light); background: #eef3fb; }
+  .choice-chip.selected { background: var(--navy); border-color: var(--navy); color: var(--white); font-weight: 500; }
+  .chip-dot { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid currentColor; flex-shrink: 0; }
+  .choice-chip.selected .chip-dot { background: var(--red-light); border-color: var(--red-light); }
+  .yn-table { width: 100%; border-collapse: collapse; }
+  .yn-table tr { border-bottom: 1px solid var(--surface2); }
+  .yn-table tr:last-child { border-bottom: none; }
+  .yn-table td { padding: 12px 0; vertical-align: middle; }
+  .yn-table td:first-child { font-size: 13px; padding-right: 20px; line-height: 1.5; }
+  .yn-table td:last-child { white-space: nowrap; width: 110px; }
+  .yn-row-controls { display: flex; gap: 7px; }
+  .yn-chip { padding: 5px 16px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); font-size: 12px; font-weight: 500; cursor: pointer; color: var(--text-mid); transition: all 0.12s; user-select: none; }
+  .yn-chip.yes-sel { background: #e8f4ea; border-color: #2e7d32; color: #1b4d1e; font-weight: 600; }
+  .yn-chip.no-sel { background: #fde8e4; border-color: var(--red); color: #7b1f1f; font-weight: 600; }
+  .device-header { display: grid; grid-template-columns: 1fr 1fr 36px; gap: 8px; padding: 0 0 8px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; }
+  .device-row { display: grid; grid-template-columns: 1fr 1fr 36px; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--surface2); }
+  .device-row:last-child { border-bottom: none; }
+  .device-row input { font-size: 13px; padding: 7px 9px; }
+  .add-row-btn { margin-top: 10px; padding: 7px 14px; background: none; border: 1px dashed var(--border); border-radius: var(--radius); font-family: var(--font); font-size: 13px; color: var(--text-light); cursor: pointer; width: 100%; transition: all 0.12s; }
+  .add-row-btn:hover { border-color: var(--blue); color: var(--blue); background: #eef3fb; }
+  .remove-btn { background: none; border: none; cursor: pointer; color: var(--text-light); font-size: 20px; line-height: 1; padding: 0; }
+  .remove-btn:hover { color: var(--red); }
+  .ack-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .ack-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer; transition: all 0.12s; }
+  .ack-item:hover { border-color: var(--blue); background: #f0f5fc; }
+  .ack-item.checked { background: #eef6f0; border-color: #4caf50; }
+  .ack-check { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 3px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; background: white; transition: all 0.12s; }
+  .ack-item.checked .ack-check { background: #2e7d32; border-color: #2e7d32; }
+  .ack-check svg { display: none; width: 11px; height: 11px; stroke: white; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .ack-item.checked .ack-check svg { display: block; }
+  .ack-text { font-size: 13px; line-height: 1.5; }
+  .security-box { background: var(--surface2); border: 1px solid var(--border); border-left: 4px solid var(--navy); border-radius: var(--radius-lg); padding: 18px 22px; margin-top: 10px; }
+  .security-box-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--navy); margin-bottom: 14px; }
+  .form-nav { display: flex; gap: 10px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border); align-items: center; }
+  .btn { padding: 9px 22px; border-radius: var(--radius); font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; border: 1.5px solid transparent; transition: all 0.15s; }
+  .btn-primary { background: var(--navy); color: white; border-color: var(--navy); }
+  .btn-primary:hover { background: var(--navy-mid); }
+  .btn-secondary { background: white; color: var(--text-mid); border-color: var(--border); }
+  .btn-secondary:hover { background: var(--surface); }
+  .btn-submit { background: var(--red); color: white; border-color: var(--red); padding: 9px 26px; font-weight: 600; }
+  .btn-submit:hover { background: var(--red-light); }
+  .nav-spacer { flex: 1; }
+  .step-counter { font-size: 11px; color: var(--text-light); font-family: var(--mono); }
+  .val-msg { font-size: 11px; color: var(--red); margin-top: 3px; display: none; }
+  .val-msg.show { display: block; }
+  #success-screen { display: none; text-align: center; padding: 60px 40px; }
+  .success-icon { width: 72px; height: 72px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+  .success-icon svg { width: 36px; height: 36px; stroke: #2e7d32; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  #success-screen h2 { font-size: 22px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
+  #success-screen p { color: var(--text-mid); font-size: 14px; max-width: 460px; margin: 0 auto 6px; }
+  .ref-badge { display: inline-block; margin-top: 16px; padding: 7px 20px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; font-family: var(--mono); font-size: 12px; color: var(--navy); font-weight: 500; }
+  @media (max-width: 620px) {
+    .header-inner { padding: 14px 16px; } .header-ref { display: none; }
+    .form-shell { padding: 20px 16px 60px; }
+    .field-grid.cols-2 { grid-template-columns: 1fr; }
+    .field.span-2 { grid-column: span 1; }
+    .progress-nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="header-inner">
+    <img class="header-logo" src="data:image/png;base64,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" alt="Dialysis Care Center">
+    <div class="header-divider"></div>
+    <div class="header-text">
+      <h1>Dialysis Care Center &mdash; International Travel &amp; Device Authorization</h1>
+      <p>Information Security Department &nbsp;&middot;&nbsp; Submit at least 5 business days before departure</p>
+    </div>
+    <div class="header-ref">
+      <div class="rl">Reference #</div>
+      <div class="rv" id="ref-num">&mdash;</div>
+      <div class="rl" style="margin-top:6px;">Lead time required</div>
+      <div class="rv">5 business days</div>
+    </div>
+  </div>
+</header>
+<div class="header-stripe"></div>
+
+<div class="notice-bar">
+  <div class="notice-inner">
+    <span style="font-size:15px;flex-shrink:0;">&#9888;</span>
+    <span>Failure to submit before departure may result in <strong>session revocation, VPN restriction, or device quarantine upon return.</strong> Fields marked <span style="color:var(--red);font-weight:700;">*</span> are required.</span>
+  </div>
+</div>
+
+<main class="form-shell">
+
+  <nav class="progress-nav">
+    <button class="step-btn active" onclick="goTo(0)"><span class="step-num">1</span><span>Employee</span></button>
+    <button class="step-btn" onclick="goTo(1)"><span class="step-num">2</span><span>Travel</span></button>
+    <button class="step-btn" onclick="goTo(2)"><span class="step-num">3</span><span>Devices</span></button>
+    <button class="step-btn" onclick="goTo(3)"><span class="step-num">4</span><span>Usage</span></button>
+    <button class="step-btn" onclick="goTo(4)"><span class="step-num">5</span><span>Acknowledge</span></button>
+  </nav>
+
+  <form id="travel-form" novalidate>
+
+    <!-- SECTION 1 -->
+    <section class="form-section active" id="sec-0">
+      <div class="section-header">
+        <div class="section-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/></svg></div>
+        <div class="section-title"><h2>Employee Information</h2><p>Your personal and contact details</p></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Personal Details</div>
+        <div class="field-grid cols-2">
+          <div class="field"><label>Full Name <span class="req">*</span></label><input type="text" id="full-name" placeholder="e.g. Jane M. Smith"></div>
+          <div class="field"><label>Employee ID <span class="req">*</span></label><input type="text" id="emp-id" placeholder="e.g. EMP-00421"></div>
+          <div class="field"><label>Department <span class="req">*</span></label><input type="text" id="department" placeholder="e.g. IT / Nursing"></div>
+          <div class="field"><label>Job Title <span class="req">*</span></label><input type="text" id="job-title" placeholder="e.g. Network Administrator"></div>
+          <div class="field"><label>Work Email <span class="req">*</span></label><input type="email" id="work-email" placeholder="jane@dcc.com"></div>
+          <div class="field"><label>Mobile / Work Phone</label><input type="tel" id="mobile" placeholder="+1 (555) 000-0000"></div>
+          <div class="field"><label>Manager / Supervisor <span class="req">*</span></label><input type="text" id="manager" placeholder="Manager full name"></div>
+          <div class="field"><label>Date Submitted</label><input type="date" id="submit-date"></div>
+        </div>
+      </div>
+      <div class="form-nav">
+        <span class="step-counter">Step 1 of 5</span><span class="nav-spacer"></span>
+        <button type="button" class="btn btn-primary" onclick="nextSection(0)">Continue &#8594;</button>
+      </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="form-section" id="sec-1">
+      <div class="section-header">
+        <div class="section-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20M12 2a14.5 14.5 0 0 1 0 20M2 12h20"/></svg></div>
+        <div class="section-title"><h2>Travel Details</h2><p>Where you are going and when</p></div>
+      </div>
+      <div class="card">
+        <div class="field-grid cols-2">
+          <div class="field"><label>Destination Country / Countries</label><input type="text" id="countries" placeholder="e.g. Germany, France"></div>
+          <div class="field"><label>City / Cities</label><input type="text" id="cities" placeholder="e.g. Berlin, Paris"></div>
+          <div class="field"><label>Departure Date</label><input type="date" id="depart-date"></div>
+          <div class="field"><label>Return Date</label><input type="date" id="return-date"></div>
+          <div class="field span-2">
+            <label>Purpose of Travel</label>
+            <div class="choice-group" id="purpose-group">
+              <label class="choice-chip"><input type="radio" name="purpose" value="Business Meeting"><span class="chip-dot"></span>Business Meeting</label>
+              <label class="choice-chip"><input type="radio" name="purpose" value="Conference / Event"><span class="chip-dot"></span>Conference / Event</label>
+              <label class="choice-chip"><input type="radio" name="purpose" value="Training"><span class="chip-dot"></span>Training</label>
+              <label class="choice-chip"><input type="radio" name="purpose" value="Other"><span class="chip-dot"></span>Other</label>
+            </div>
+          </div>
+          <div class="field span-2" id="other-wrap" style="display:none;">
+            <label>Specify Purpose</label>
+            <input type="text" id="purpose-other" placeholder="Please describe...">
+          </div>
+        </div>
+      </div>
+      <div class="form-nav">
+        <span class="step-counter">Step 2 of 5</span>
+        <button type="button" class="btn btn-secondary" onclick="goTo(0)">&#8592; Back</button><span class="nav-spacer"></span>
+        <button type="button" class="btn btn-primary" onclick="nextSection(1)">Continue &#8594;</button>
+      </div>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="form-section" id="sec-2">
+      <div class="section-header">
+        <div class="section-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <div class="section-title"><h2>Device Information</h2><p>List all devices being taken on this trip</p></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Devices Traveling</div>
+        <div class="field-grid cols-2" style="margin-bottom:22px;">
+          <div class="field">
+            <label>Taking a company-issued device?</label>
+            <div class="choice-group" id="has-company-device">
+              <label class="choice-chip"><input type="radio" name="has_company_device" value="Yes"><span class="chip-dot"></span>Yes</label>
+              <label class="choice-chip"><input type="radio" name="has_company_device" value="No"><span class="chip-dot"></span>No</label>
+            </div>
+          </div>
+          <div class="field">
+            <label>Taking a personal device used for work?</label>
+            <div class="choice-group" id="has-personal-device">
+              <label class="choice-chip"><input type="radio" name="has_personal_device" value="Yes"><span class="chip-dot"></span>Yes</label>
+              <label class="choice-chip"><input type="radio" name="has_personal_device" value="No"><span class="chip-dot"></span>No</label>
+            </div>
+          </div>
+        </div>
+        <div class="card-title">Device List <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text-light);">&mdash; host name is optional</span></div>
+        <div class="device-header"><div>Host Name (optional)</div><div>Serial / Asset #</div><div></div></div>
+        <div id="device-rows"></div>
+        <button type="button" class="add-row-btn" onclick="addDeviceRow()">+ Add device</button>
+      </div>
+      <div class="form-nav">
+        <span class="step-counter">Step 3 of 5</span>
+        <button type="button" class="btn btn-secondary" onclick="goTo(1)">&#8592; Back</button><span class="nav-spacer"></span>
+        <button type="button" class="btn btn-primary" onclick="nextSection(2)">Continue &#8594;</button>
+      </div>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section class="form-section" id="sec-3">
+      <div class="section-header">
+        <div class="section-icon"><svg viewBox="0 0 24 24"><path d="M1 6l10.5 7L22 6"/><rect x="1" y="4" width="21" height="16" rx="2"/></svg></div>
+        <div class="section-title"><h2>Device &amp; Network Usage</h2><p>How you will use your device while abroad</p></div>
+      </div>
+      <div class="card">
+        <table class="yn-table" id="yn-questions"></table>
+      </div>
+      <div class="form-nav">
+        <span class="step-counter">Step 4 of 5</span>
+        <button type="button" class="btn btn-secondary" onclick="goTo(2)">&#8592; Back</button><span class="nav-spacer"></span>
+        <button type="button" class="btn btn-primary" onclick="nextSection(3)">Continue &#8594;</button>
+      </div>
+    </section>
+
+    <!-- SECTION 5 -->
+    <section class="form-section" id="sec-4">
+      <div class="section-header">
+        <div class="section-icon"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <div class="section-title"><h2>Acknowledgment</h2><p>Check all items before submitting</p></div>
+      </div>
+      <div class="card">
+        <ul class="ack-list" id="ack-list">
+          <li class="ack-item" onclick="toggleAck(this)"><div class="ack-check"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3"/></svg></div><span class="ack-text">All information provided is accurate and complete.</span></li>
+          <li class="ack-item" onclick="toggleAck(this)"><div class="ack-check"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3"/></svg></div><span class="ack-text">I will use VPN when accessing company resources on any public or untrusted network.</span></li>
+          <li class="ack-item" onclick="toggleAck(this)"><div class="ack-check"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3"/></svg></div><span class="ack-text">I will not leave devices unattended and will immediately report any lost or stolen device to the security team.</span></li>
+          <li class="ack-item" onclick="toggleAck(this)"><div class="ack-check"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3"/></svg></div><span class="ack-text">I understand my sessions will remain active based on this approved request. Any changes to my travel plans will be reported to the Security team immediately.</span></li>
+        </ul>
+        <div class="val-msg" id="err-acks" style="margin-top:10px;">Please check all items before submitting.</div>
+      </div>
+      <div class="security-box">
+        <div class="security-box-title">For Information Security / IT Use Only &mdash; Do Not Fill</div>
+        <div class="field-grid cols-2">
+          <div class="field"><label>Date Received</label><input type="text" disabled placeholder="IT/Security only"></div>
+          <div class="field"><label>Reviewed By</label><input type="text" disabled placeholder="IT/Security only"></div>
+          <div class="field"><label>Status</label><input type="text" disabled placeholder="Approved / Denied / Conditions"></div>
+          <div class="field"><label>Ticket / Reference #</label><input type="text" disabled placeholder="IT/Security only"></div>
+          <div class="field span-2"><label>Notes</label><textarea disabled placeholder="IT/Security only" rows="2"></textarea></div>
+        </div>
+      </div>
+      <div class="form-nav">
+        <span class="step-counter">Step 5 of 5</span>
+        <button type="button" class="btn btn-secondary" onclick="goTo(3)">&#8592; Back</button><span class="nav-spacer"></span>
+        <button type="button" class="btn btn-submit" onclick="submitForm()">Submit Request &#9993;</button>
+      </div>
+    </section>
+
+  </form>
+
+  <div id="success-screen">
+    <div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <h2>Request Submitted</h2>
+    <p>Your travel request has been sent to the DCC Information Security team. You will be contacted once it has been reviewed.</p>
+    <p style="margin-top:6px;">Please allow up to 2 business days. If you have not heard back, contact IT/Security directly.</p>
+    <div class="ref-badge" id="success-ref"></div>
+    <div style="margin-top:20px;"><button class="btn btn-secondary" onclick="resetForm()">Submit Another Request</button></div>
+  </div>
+
+</main>
+
+<script>
+
+const SECURITY_EMAIL = "slawal@dccdialysis.com";
+
+let deviceRowCount = 0;
+
+const ynQuestions = [
+  { id: "q_access_systems", label: "Will you use company systems, email, or data while abroad?" },
+  { id: "q_public_wifi",    label: "Will you connect to public or hotel Wi-Fi networks?" },
+  { id: "q_vpn",            label: "Do you require VPN access during your trip?" },
+  { id: "q_unattended",     label: "Will the device leave your physical possession at any point?" },
+];
+
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("submit-date").value = new Date().toISOString().split("T")[0];
+  var ref = "DCC-ITR-" + new Date().getFullYear() + "-" + String(Math.floor(Math.random() * 90000) + 10000);
+  document.getElementById("ref-num").textContent = ref;
+  document.getElementById("success-ref").textContent = "Reference: " + ref;
+
+  var table = document.getElementById("yn-questions");
+  ynQuestions.forEach(function(q) {
+    var tr = document.createElement("tr");
+    var td1 = document.createElement("td");
+    td1.textContent = q.label;
+    var td2 = document.createElement("td");
+    td2.innerHTML = '<div class="yn-row-controls"><span class="yn-chip" data-q="' + q.id + '" data-val="Yes" onclick="selectYN(this)">Yes</span><span class="yn-chip" data-q="' + q.id + '" data-val="No" onclick="selectYN(this)">No</span></div>';
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    table.appendChild(tr);
+  });
+
+  addDeviceRow();
+
+  document.querySelectorAll(".choice-group").forEach(function(group) {
+    group.addEventListener("click", function(e) {
+      var chip = e.target.closest(".choice-chip");
+      if (!chip) return;
+      var input = chip.querySelector("input");
+      if (!input || input.type !== "radio") return;
+      group.querySelectorAll(".choice-chip").forEach(function(c) { c.classList.remove("selected"); });
+      chip.classList.add("selected");
+      input.checked = true;
+    });
+  });
+
+  document.getElementById("purpose-group").addEventListener("click", function() {
+    var sel = document.querySelector('input[name="purpose"]:checked');
+    document.getElementById("other-wrap").style.display = (sel && sel.value === "Other") ? "" : "none";
+  });
+});
+
+function goTo(idx) {
+  document.querySelectorAll(".form-section").forEach(function(s, i) {
+    s.classList.toggle("active", i === idx);
+  });
+  document.querySelectorAll(".step-btn").forEach(function(b, i) {
+    b.classList.remove("active", "done");
+    if (i === idx) b.classList.add("active");
+    else if (i < idx) b.classList.add("done");
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function nextSection(idx) {
+  goTo(idx + 1);
+}
+
+function addDeviceRow() {
+  deviceRowCount++;
+  var n = deviceRowCount;
+  var row = document.createElement("div");
+  row.className = "device-row";
+  row.id = "device-row-" + n;
+  var i1 = document.createElement("input");
+  i1.type = "text";
+  i1.name = "dev_host_" + n;
+  i1.placeholder = "e.g. DCC-LAPTOP-042";
+  var i2 = document.createElement("input");
+  i2.type = "text";
+  i2.name = "dev_serial_" + n;
+  i2.placeholder = "Serial / Asset #";
+  var btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "remove-btn";
+  btn.innerHTML = "&times;";
+  btn.onclick = function() { removeDeviceRow(n); };
+  row.appendChild(i1);
+  row.appendChild(i2);
+  row.appendChild(btn);
+  document.getElementById("device-rows").appendChild(row);
+}
+
+function removeDeviceRow(n) {
+  var el = document.getElementById("device-row-" + n);
+  if (el) el.remove();
+}
+
+function selectYN(chip) {
+  var q = chip.dataset.q;
+  document.querySelectorAll('[data-q="' + q + '"]').forEach(function(c) {
+    c.classList.remove("yes-sel", "no-sel");
+  });
+  chip.classList.add(chip.dataset.val === "Yes" ? "yes-sel" : "no-sel");
+}
+
+function toggleAck(item) { item.classList.toggle("checked"); }
+
+function submitForm() {
+  var total = document.querySelectorAll("#ack-list .ack-item").length;
+  var checked = document.querySelectorAll("#ack-list .ack-item.checked").length;
+  if (total !== checked) {
+    document.getElementById("err-acks").classList.add("show");
+    return;
+  }
+
+  function g(id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+  function gn(name) { var el = document.querySelector('[name="' + name + '"]:checked'); return el ? el.value : "Not specified"; }
+  function yn(id) { var s = document.querySelector('.yn-chip.yes-sel[data-q="' + id + '"], .yn-chip.no-sel[data-q="' + id + '"]'); return s ? s.dataset.val : "Not answered"; }
+
+  var devices = [];
+  document.querySelectorAll('[id^="device-row-"]').forEach(function(row) {
+    var idx = row.id.split("-").pop();
+    var host = row.querySelector('[name="dev_host_' + idx + '"]');
+    var ser = row.querySelector('[name="dev_serial_' + idx + '"]');
+    var h = host ? host.value : "";
+    var s = ser ? ser.value : "";
+    if (h || s) devices.push((h || "(no host name)") + "  |  S/N: " + (s || "—"));
+  });
+
+  var ref = document.getElementById("ref-num").textContent;
+  var lines = [
+    "DIALYSIS CARE CENTER — INTERNATIONAL TRAVEL REQUEST",
+    "Reference: " + ref,
+    "========================================================",
+    "",
+    "SECTION 1 — EMPLOYEE",
+    "  Name:           " + g("full-name"),
+    "  Employee ID:    " + g("emp-id"),
+    "  Department:     " + g("department"),
+    "  Job Title:      " + g("job-title"),
+    "  Work Email:     " + g("work-email"),
+    "  Mobile:         " + (g("mobile") || "—"),
+    "  Manager:        " + g("manager"),
+    "  Date Submitted: " + g("submit-date"),
+    "",
+    "SECTION 2 — TRAVEL",
+    "  Destination:    " + g("countries"),
+    "  Cities:         " + (g("cities") || "—"),
+    "  Departure:      " + g("depart-date"),
+    "  Return:         " + g("return-date"),
+    "  Purpose:        " + gn("purpose") + (g("purpose-other") ? " — " + g("purpose-other") : ""),
+    "",
+    "SECTION 3 — DEVICES",
+    "  Company device:  " + gn("has_company_device"),
+    "  Personal device: " + gn("has_personal_device"),
+    "  Devices:"
+  ].concat(devices.length ? devices.map(function(d) { return "    " + d; }) : ["    None listed"]).concat([
+    "",
+    "SECTION 4 — USAGE ABROAD",
+    "  Access company systems:  " + yn("q_access_systems"),
+    "  Public/hotel Wi-Fi:      " + yn("q_public_wifi"),
+    "  VPN required:            " + yn("q_vpn"),
+    "  Device unattended:       " + yn("q_unattended"),
+    "",
+    "SECTION 5 — ACKNOWLEDGMENT",
+    "  Employee confirmed all acknowledgment items.",
+    "",
+    "--------------------------------------------------------",
+    "FOR IT/SECURITY USE ONLY",
+    "  Status:       [ ] Approved  [ ] Conditions  [ ] Denied",
+    "  Reviewed by:  ______________________________",
+    "  Ticket #:     ______________________________",
+    "  Notes:        ______________________________"
+  ]);
+
+  var subject = encodeURIComponent("[DCC Travel Request] " + g("full-name") + " — " + g("countries") + " — Departs " + g("depart-date") + " — " + ref);
+  window.location.href = "mailto:" + SECURITY_EMAIL + "?subject=" + subject + "&body=" + encodeURIComponent(lines.join("\n"));
+
+  document.getElementById("travel-form").style.display = "none";
+  document.querySelector(".progress-nav").style.display = "none";
+  document.getElementById("success-screen").style.display = "block";
+}
+
+function resetForm() {
+  document.getElementById("travel-form").reset();
+  document.querySelectorAll(".choice-chip").forEach(function(c) { c.classList.remove("selected"); });
+  document.querySelectorAll(".ack-item").forEach(function(a) { a.classList.remove("checked"); });
+  document.querySelectorAll(".yn-chip").forEach(function(c) { c.classList.remove("yes-sel","no-sel"); });
+  document.getElementById("device-rows").innerHTML = "";
+  deviceRowCount = 0;
+  addDeviceRow();
+  document.getElementById("travel-form").style.display = "";
+  document.querySelector(".progress-nav").style.display = "";
+  document.getElementById("success-screen").style.display = "none";
+  goTo(0);
+}
+
+</script>
+</body>
+</html>
